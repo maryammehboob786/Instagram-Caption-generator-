@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 340 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 340 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 10% 10%;
+    --primary: 330 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 320 20% 96%;
+    --secondary-foreground: 340 10% 10%;
+    --muted: 320 20% 96%;
+    --muted-foreground: 340 10% 45%;
+    --accent: 320 20% 96%;
+    --accent-foreground: 340 10% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 320 15% 90%;
+    --input: 320 15% 90%;
+    --ring: 330 80% 55%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer utilities {
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(to right, rgb(255 105 180 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 105 180 / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  .gradient-instagram {
+    background: linear-gradient(135deg, #f58529 0%, #dd2a7b 25%, #8134af 50%, #515bd4 100%);
+  }
+  
+  .gradient-pink {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 50%, #f67280 100%);
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #f58529 0%, #dd2a7b 25%, #8134af 50%, #515bd4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .gradient-text-pink {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 50%, #f67280 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Button hover animations */
+@layer components {
+  button[data-state="active"] {
+    background: linear-gradient(135deg, #f58529 0%, #dd2a7b 25%, #8134af 50%, #515bd4 100%) !important;
+    color: white !important;
+  }
+  
+  button[data-state="inactive"]:hover {
+    background: rgba(245, 133, 41, 0.1) !important;
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+  
+  /* Markdown content styling */
+  .markdown-content {
+    line-height: 1.7;
+  }
+  
+  .markdown-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .markdown-content strong {
+    font-weight: 700;
+  }
+  
+  .markdown-content em {
+    font-style: italic;
+  }
+  
+  .markdown-content code {
+    background: rgba(245, 133, 41, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #dd2a7b;
+  }
+}
