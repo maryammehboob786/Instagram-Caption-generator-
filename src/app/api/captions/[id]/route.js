@@ -1,5 +1,4 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../../auth/[...nextauth]/route'
+import { verifyToken } from '@/lib/auth'
 import connectDB from '@/lib/mongodb'
 import Caption from '@/models/Caption'
 import User from '@/models/User'
@@ -7,14 +6,14 @@ import { NextResponse } from 'next/server'
 
 export async function DELETE(request, { params }) {
   try {
-    const session = await getServerSession(authOptions)
+    const decoded = verifyToken(request)
     
-    if (!session) {
+    if (!decoded) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await connectDB()
-    const user = await User.findOne({ email: session.user.email })
+    const user = await User.findById(decoded.userId)
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })

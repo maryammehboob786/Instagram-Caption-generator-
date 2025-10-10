@@ -1,5 +1,5 @@
 'use client'
-import { signIn, useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,7 @@ import { Sparkles, Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function Home() {
-  const { data: session, status } = useSession()
+  const { user, loading: authLoading, login, register } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -27,10 +27,10 @@ export default function Home() {
   const [showSignUpPassword, setShowSignUpPassword] = useState(false)
 
   useEffect(() => {
-    if (session) {
+    if (user) {
       router.push('/dashboard')
     }
-  }, [session, router])
+  }, [user, router])
 
   const handleSignIn = async (e) => {
     e.preventDefault()
@@ -38,16 +38,12 @@ export default function Home() {
     setLoading(true)
 
     try {
-      const result = await signIn('credentials', {
-        email: signInEmail,
-        password: signInPassword,
-        redirect: false,
-      })
+      const result = await login(signInEmail, signInPassword)
 
-      if (result?.error) {
-        setError(result.error)
-      } else {
+      if (result.success) {
         router.push('/dashboard')
+      } else {
+        setError(result.error || 'Invalid email or password')
       }
     } catch (err) {
       setError('An error occurred during sign in')
@@ -62,35 +58,12 @@ export default function Home() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: signUpName,
-          email: signUpEmail,
-          password: signUpPassword,
-        }),
-      })
+      const result = await register(signUpName, signUpEmail, signUpPassword)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Registration failed')
-        setLoading(false)
-        return
-      }
-
-      // Auto sign in after successful registration
-      const result = await signIn('credentials', {
-        email: signUpEmail,
-        password: signUpPassword,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError('Registration successful but sign in failed. Please try signing in.')
-      } else {
+      if (result.success) {
         router.push('/dashboard')
+      } else {
+        setError(result.error || 'Registration failed')
       }
     } catch (err) {
       setError('An error occurred during registration')
@@ -99,7 +72,7 @@ export default function Home() {
     }
   }
 
-  if (status === 'loading') {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -268,16 +241,16 @@ export default function Home() {
                         )}
                       </Button>
 
-                      <div className="relative my-6">
+                      {/* <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-border"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
                           <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
                         </div>
-                      </div>
+                      </div> */}
 
-                      <Button
+                      {/* <Button
                         type="button"
                         variant="outline"
                         onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
@@ -302,7 +275,7 @@ export default function Home() {
                           />
                         </svg>
                         Google
-                      </Button>
+                      </Button> */}
                     </form>
                     </motion.div>
                   </TabsContent>
@@ -397,7 +370,7 @@ export default function Home() {
                         )}
                       </Button>
 
-                      <div className="relative my-6">
+                      {/* <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-border"></div>
                         </div>
@@ -431,7 +404,7 @@ export default function Home() {
                           />
                         </svg>
                         Google
-                      </Button>
+                      </Button> */}
                     </form>
                     </motion.div>
                   </TabsContent>

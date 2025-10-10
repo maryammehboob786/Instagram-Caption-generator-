@@ -1,5 +1,5 @@
 'use client'
-import { signOut, useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +14,7 @@ import { LogOut, User, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Navbar() {
-  const { data: session } = useSession()
+  const { user, logout } = useAuth()
 
   return (
     <nav className="border-b border-border bg-card/50 backdrop-blur-xl sticky top-0 z-50">
@@ -29,14 +29,14 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {session?.user && (
+          {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-secondary">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={session.user.image} alt={session.user.name} />
+                    <AvatarImage src={user.image} alt={user.name} />
                     <AvatarFallback className="bg-secondary text-foreground">
-                      {session.user.name?.charAt(0)}
+                      {user.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -44,9 +44,9 @@ export default function Navbar() {
               <DropdownMenuContent align="end" className="w-56 bg-card border-border">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {session.user.email}
+                      {user.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -59,7 +59,7 @@ export default function Navbar() {
                 </DropdownMenuItem> */}
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={() => logout()}
                   className="cursor-pointer text-red-500 focus:text-red-500"
                 >
                   <LogOut className="mr-2 h-4 w-4" />

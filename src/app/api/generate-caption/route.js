@@ -1,5 +1,4 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { verifyToken } from '@/lib/auth'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import connectDB from '@/lib/mongodb'
 import Caption from '@/models/Caption'
@@ -10,9 +9,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions)
+    const decoded = verifyToken(request)
     
-    if (!session) {
+    if (!decoded) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -45,7 +44,7 @@ export async function POST(request) {
 
     // Save to database
     await connectDB()
-    const user = await User.findOne({ email: session.user.email })
+    const user = await User.findById(decoded.userId)
 
     if (user) {
       await Caption.create({
