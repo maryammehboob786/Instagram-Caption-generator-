@@ -1,56 +1,112 @@
-import { verifyToken } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../auth/[...nextauth]/route'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import connectDB from '@/lib/mongodb'
 import Caption from '@/models/Caption'
 import User from '@/models/User'
 import { NextResponse } from 'next/server'
+import sharp from 'sharp'
+import { encode } from 'blurhash'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
+async function generateBlurHash(imageBase64) {
+  try {
+    // Remove data URL prefix if present
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
+    const buffer = Buffer.from(base64Data, 'base64')
+    
+    // Resize image to small dimensions for blur hash (32x32 is sufficient)
+    const image = await sharp(buffer)
+      .resize(32, 32, { fit: 'cover' })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+    
+    const { data, info } = image
+    const blurHash = encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4)
+    
+    return blurHash
+  } catch (error) {
+    console.error('Error generating blur hash:', error)
+    return null
+  }
+}
+
 export async function POST(request) {
   try {
-    const decoded = verifyToken(request)
+    const session = await getServerSession(authOptions)
     
-    if (!decoded) {
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { prompt } = await request.json()
+    const { prompt, image } = await request.json()
 
     if (!prompt || prompt.trim().length === 0) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
     }
 
-    // Generate caption using Gemini
-    // Using gemini-2.5-flash which is the stable version
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    let blurHash = null
     
-    const enhancedPrompt = `Create an engaging, creative Instagram post caption based on this idea: "${prompt}". 
+    // Generate blur hash if image is provided
+    if (image) {
+      blurHash = await generateBlurHash(image)
+    }
+
+    // Generate caption using Gemini
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash'
+    })
+    
+    let enhancedPrompt = `Create a professional, engaging LinkedIn post caption based on this idea: "${prompt}". 
     
     Requirements:
-    - Make it fun, relatable, and authentic
-    - Include relevant emojis where appropriate (but don't overdo it)
-    - Add 5-8 relevant hashtags at the end
-    - Keep it between 100-200 words
-    - Make it engaging and likely to get likes and comments
+    - Make it professional yet conversational
+    - Include relevant emojis where appropriate
+    - Add 3-5 relevant hashtags at the end
+    - Keep it between 150-250 words
+    - Make it engaging and likely to get interactions
     - Use line breaks for better readability
-    - Make it Instagram-worthy and visually appealing in text format
+    `
     
-    Just return the caption, nothing else.`
-
-    const result = await model.generateContent(enhancedPrompt)
+    let result
+    
+    if (image) {
+      // If image is provided, send it to Gemini for vision analysis
+      enhancedPrompt += `\nAnalyze the provided image and incorporate relevant details from it into the caption to make it more contextual and engaging.\n\nJust return the caption, nothing else.`
+      
+      // Convert base64 to the format Gemini expects
+      const base64Data = image.replace(/^data:image\/\w+;base64,/, '')
+      const mimeType = image.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg'
+      
+      result = await model.generateContent([
+        enhancedPrompt,
+        {
+          inlineData: {
+            mimeType: mimeType,
+            data: base64Data
+          }
+        }
+      ])
+    } else {
+      enhancedPrompt += `\nJust return the caption, nothing else.`
+      result = await model.generateContent(enhancedPrompt)
+    }
+    
     const response = await result.response
     const caption = response.text()
 
     // Save to database
     await connectDB()
-    const user = await User.findById(decoded.userId)
+    const user = await User.findOne({ email: session.user.email })
 
     if (user) {
       await Caption.create({
         userId: user._id,
         prompt: prompt.trim(),
         caption: caption.trim(),
+        thumbnailBlurHash: blurHash,
       })
     }
 

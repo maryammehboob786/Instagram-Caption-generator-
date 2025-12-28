@@ -1,14 +1,14 @@
-# � Instagram Caption Generator
+# 🚀 LinkedIn Caption Generator
 
-An AI-powered Instagram caption generator built with Next.js 15, featuring user authentication, caption history, and integration with Google's Generative AI. Create engaging, creative Instagram captions effortlessly!
+An AI-powered LinkedIn caption generator built with Next.js 15, featuring user authentication, caption history, and integration with Google's Generative AI. Create engaging, professional LinkedIn captions effortlessly!
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Caption Generation** - Leverages Google's Generative AI (Gemini) to create engaging Instagram captions
+- 🤖 **AI-Powered Caption Generation** - Leverages Google's Generative AI (Gemini) to create engaging LinkedIn captions
 - 🔐 **User Authentication** - Secure sign-up and sign-in with NextAuth.js
 - 📝 **Caption History** - Save and manage your generated captions
 - 🎨 **Modern UI** - Beautiful, responsive interface built with Tailwind CSS and Framer Motion
-- 🔍 **Multiple Tones** - Generate captions in different tones (Casual, Inspiring, Fun, Aesthetic)
+- 🔍 **Multiple Tones** - Generate captions in different tones (Professional, Casual, Inspiring, Humorous)
 - 💾 **MongoDB Integration** - Persistent storage for users and captions
 - 🎯 **Real-time Updates** - Instant caption generation and updates
 - 📱 **Fully Responsive** - Works seamlessly on desktop, tablet, and mobile devices
@@ -43,8 +43,8 @@ An AI-powered Instagram caption generator built with Next.js 15, featuring user 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/instagram-caption-generator.git
-cd instagram-caption-generator
+git clone https://github.com/yourusername/linkedin-caption-generator.git
+cd linkedin-caption-generator
 ```
 
 ### 2. Install Dependencies
@@ -161,7 +161,7 @@ npm start
 ## 📁 Project Structure
 
 ```
-instagram-caption-generator/
+linkedin-caption-generator/
 ├── backend/                    # Express.js backend
 │   ├── config/                # Database configuration
 │   ├── controllers/           # Route controllers
